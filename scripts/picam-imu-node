@@ -12,7 +12,7 @@ from threading import Thread
 class picam(Thread):
     def __init__(self, width = 640, height = 480, quality = 8, rate = 25):
         Thread.__init__(self)
-        self.image_pub = rospy.Publisher('/pidrone/image/compressed', CompressedImage, queue_size=1)
+        self.image_pub = rospy.Publisher('/pidrone/image', CompressedImage, queue_size=1)
         self.pixels = (width, height)
         self.quality = quality
         self.stream = io.BytesIO()
@@ -113,7 +113,7 @@ class Imu_send(Thread):
 
 if __name__ == '__main__':
     rospy.init_node('pidrone_publisher', anonymous=True)
-    camSend = picam(rate = 30)
+    camSend = picam(rate = 25)
     imuSend = Imu_send(rate = 150)
     print "Started ROS node"
     camSend.daemon = True
