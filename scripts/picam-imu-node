@@ -145,13 +145,14 @@ if __name__ == '__main__':
     imu_send_thread.start()
 
     # try:
-    while not rospy.is_shutdown() and camSend.running and imuSend.running:
+    while not rospy.is_shutdown():
         try:
             print "Publisher running..."
         except rospy.ROSInterruptException:
             print "Shutting down ROS Image module"
             camSend.stop()
             imuSend.stop()
+            break
 
     # except KeyboardInterrupt:
     #     print "Shutting down ROS Image module"
