@@ -39,7 +39,7 @@ class picam(Thread):
         self.running = False
 
     def ImagePublisher(self):
-        try:
+        # try:
             image = CompressedImage()
             count = 1
             # Use the video-port for captures...
@@ -52,7 +52,7 @@ class picam(Thread):
                 image.header.stamp = rospy.Time.now()
                 image.header.frame_id = "camera_link"
                 image.format = "jpeg"
-                image.data = np.frombuffer(self.stream.getvalue(), dtype=np.dtype('uint8'))
+                image.data = np.frombuffer(self.stream.getvalue(), dtype=np.dtype('uint8')).toString()
                 self.stream.seek(0)
                 self.stream.truncate()
                 self.image_pub.publish(image)
@@ -62,13 +62,13 @@ class picam(Thread):
                 print "image count: ", count
                 while self.elapsed < self.update_rate:
                     self.elapsed = time.time() - current
-        except KeyboardInterrupt:
-            print "KeyboardInterrupt"
-            self.stop()
-
-        except Exception:
-              print "Image Capture Failed..."
-              self.stop()
+        # except KeyboardInterrupt:
+        #     print "KeyboardInterrupt"
+        #     self.stop()
+        #
+        # except Exception:
+        #       print "Image Capture Failed..."
+        #       self.stop()
 
 class Imu_send(Thread):
     def __init__(self, rate = 250):
@@ -124,11 +124,11 @@ class Imu_send(Thread):
 
         except KeyboardInterrupt:
             print "KeyboardInterrupt"
-            self.stop()
+            self.running = False
 
         except Exception:
             print "Imu read failed..."
-            self.stop()
+            self.running = False
 
 
 if __name__ == '__main__':
@@ -143,7 +143,7 @@ if __name__ == '__main__':
         imu_send_thread = Thread(target=imuSend.imu_send)
 
         cam_send_thread.daemon = True
-        # imu_send_thread.daemon = True
+        imu_send_thread.daemon = True
 
         cam_send_thread.start()
         imu_send_thread.start()
@@ -159,6 +159,3 @@ if __name__ == '__main__':
         print "Shutting down ROS Image module"
         cam_send_thread.stop()
         imu_send_thread.stop()
-
-    cam_send_thread.join()
-    imu_send_thread.join()
