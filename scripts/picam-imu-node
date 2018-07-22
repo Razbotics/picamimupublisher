@@ -39,7 +39,7 @@ class picam(Thread):
         self.running = False
 
     def ImagePublisher(self):
-        try:
+        # try:
             image = CompressedImage()
             count = 1
             # Use the video-port for captures...
@@ -62,13 +62,13 @@ class picam(Thread):
                 print "image count: ", count
                 while self.elapsed < self.update_rate:
                     self.elapsed = time.time() - current
-        except KeyboardInterrupt:
-            print "KeyboardInterrupt"
-            self.running = False
-
-        except Exception:
-              print "Image Capture Failed..."
-              self.running = False
+        # except KeyboardInterrupt:
+        #     print "KeyboardInterrupt"
+        #     self.running = False
+        #
+        # except Exception:
+        #       print "Image Capture Failed..."
+        #       self.running = False
 
 class Imu_send(Thread):
     def __init__(self, rate = 250):
@@ -159,3 +159,6 @@ if __name__ == '__main__':
         print "Shutting down ROS Image module"
         cam_send_thread.stop()
         imu_send_thread.stop()
+
+    cam_send_thread.join()
+    imu_send_thread.join()
