@@ -133,25 +133,32 @@ class Imu_send(Thread):
 
 if __name__ == '__main__':
     #while True:
-    rospy.init_node('pidrone_publisher', anonymous=True)
-
-    camSend = picam()
-    imuSend = Imu_send()
-
-    cam_send_thread = Thread(target=camSend.ImagePublisher)
-    imu_send_thread = Thread(target=imuSend.imu_send)
-
-    cam_send_thread.daemon = True
-    # imu_send_thread.daemon = True
-
-    cam_send_thread.start()
-    imu_send_thread.start()
-    cam_send_thread.join()
-    imu_send_thread.join()
-
     try:
-        rospy.spin()
+        rospy.init_node('pidrone_publisher', anonymous=True)
+
+        camSend = picam()
+        imuSend = Imu_send()
+
+        cam_send_thread = Thread(target=camSend.ImagePublisher)
+        imu_send_thread = Thread(target=imuSend.imu_send)
+
+        cam_send_thread.daemon = True
+        # imu_send_thread.daemon = True
+
+        cam_send_thread.start()
+        imu_send_thread.start()
+    #
+    # try:
+    #     rospy.spin()
     except KeyboardInterrupt:
         print "Shutting down ROS Image module"
         cam_send_thread.stop()
         imu_send_thread.stop()
+
+    except Exception:
+        print "Shutting down ROS Image module"
+        cam_send_thread.stop()
+        imu_send_thread.stop()
+
+    cam_send_thread.join()
+    imu_send_thread.join()
