@@ -49,9 +49,10 @@ class picam(Thread):
                 self.stream.seek(0)
                 self.stream.truncate()
                 self.image_pub.publish(image)
+                count = count+1
                 if count > 250:
                     count = 1
-                #print "image count: ", count = count+1
+                print "image count: ", count
                 while self.elapsed < self.update_rate:
                     self.elapsed = time.time() - current
 
@@ -101,9 +102,10 @@ class Imu_send(Thread):
                 imu.angular_velocity.z = gyro_data['z']
 
                 imu_pub.publish(imu)
+                count=count+1
                 if count > 2500:
                     count = 1
-                print "imu count: ", count=count+1
+                print "imu count: ", count
                 while elapsed < self.update_rate:
                    elapsed = time.time() - start_time
         except:
