@@ -17,6 +17,7 @@ class picam(Thread):
         self.stream = io.BytesIO()
         self.elapsed = 0
         self.update_rate = 1.0/rate
+        self.running = True
         try:
             self.camera = picamera.PiCamera()
             self.camera.resolution = self.pixels
@@ -34,12 +35,18 @@ class picam(Thread):
         except:
             print "can't initialise camera"
 
+    def stop(self):
+        self.running = False
+
     def ImagePublisher(self):
         try:
             image = CompressedImage()
             count = 1
             # Use the video-port for captures...
-            for foo in self.camera.capture_continuous(self.stream, 'jpeg', quality=self.quality, use_video_port=True):
+            for foo in self.camera.capture_continuous(self.stream, 'jpeg',
+                        quality=self.quality, use_video_port=True):
+                if self.running = False:
+                    break
                 #publish images here
                 current = time.time()
                 image.header.stamp = rospy.Time.now()
@@ -58,13 +65,13 @@ class picam(Thread):
 
         except:
               print "Image Capture Failed..."
-              break
 
 class Imu_send(Thread):
     def __init__(self, rate = 250):
         self.imu_pub = rospy.Publisher('/pidrone/imu', Imu, queue_size=10)
         self.sensor = MPU6050(0x68)
         self.update_rate = 1.0/rate
+        self.running = True
         self.orientation_covariance = [-1.0, 0.0, 0.0,
                                         0.0, 0.0, 0.0,
                                         0.0, 0.0, 0.0]
@@ -74,12 +81,14 @@ class Imu_send(Thread):
         self.linear_acceleration_covariance = [0.0, 0.0, 0.0,
                                                0.0, 0.0, 0.0,
                                                0.0, 0.0, 0.0]
+    def stop(self):
+        self.running = False
 
     def imu_send(self):
         try:
             imu = Imu()
             count = 1
-            while True:
+            while self.running:
                 start_time = time.time()
                 elapsed = 0
                 accel_data = self.sensor.get_accel_data()
@@ -134,6 +143,8 @@ if __name__ == '__main__':
         rospy.spin()
     except KeyboardInterrupt:
         print "Shutting down ROS Image module"
+        cam_send_thread.stop()
+        imu_send_thread.stop()
 
     cam_send_thread.join()
     imu_send_thread.join()
