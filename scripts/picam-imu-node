@@ -45,7 +45,7 @@ class picam(Thread):
             # Use the video-port for captures...
             for foo in self.camera.capture_continuous(self.stream, 'jpeg',
                         quality=self.quality, use_video_port=True):
-                if self.running = False:
+                if not self.running:
                     break
                 #publish images here
                 current = time.time()
