@@ -134,7 +134,7 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         if camSend.running:
             try:
-                imu_object.imu_publisher()
+                imuSend.imu_send()
                 rate_imu.sleep()
             except rospy.ROSInterruptException:
                 camSend.running = False
