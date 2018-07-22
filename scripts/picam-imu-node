@@ -40,8 +40,7 @@ class picam(Thread):
         try:
             image = CompressedImage()
             # Use the video-port for captures...
-            for foo in self.camera.capture_continuous(self.stream, 'jpeg',
-                        quality=self.quality, use_video_port=True):
+            for foo in self.camera.capture_continuous(self.stream, 'rgb', use_video_port=True):
                 if not self.running:
                     break
                 #publish images here
