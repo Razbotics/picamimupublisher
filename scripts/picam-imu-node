@@ -58,7 +58,7 @@ class picam(Thread):
         except:
               print "Image Capture Failed..."
 
-class Imu(Thread):
+class Imu_send(Thread):
     def __init__(self, rate = 250):
         self.imu_pub = rospy.Publisher('/pidrone/imu', Imu, queue_size=10)
         self.sensor = MPU6050(0x68)
@@ -73,7 +73,7 @@ class Imu(Thread):
                                                0.0, 0.0, 0.0,
                                                0.0, 0.0, 0.0]
 
-    def Imu_send(self):
+    def imu_send(self):
         try:
             imu = Imu()
             count = 1
@@ -115,10 +115,10 @@ if __name__ == '__main__':
     rospy.init_node('pidrone_publisher', anonymous=True)
 
     cam_send = picam()
-    imu_send = Imu()
+    imu_send = Imu_send()
 
     cam_send_thread = Thread(target=cam_send.capture)
-    imu_send_thread = Thread(target=imu_send.Imu_send)
+    imu_send_thread = Thread(target=Imu_send.imu_send)
 
     cam_send_thread.daemon = True
     imu_send_thread.daemon = True
