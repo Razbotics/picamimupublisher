@@ -125,11 +125,11 @@ if __name__ == '__main__':
     #while True:
     rospy.init_node('pidrone_publisher', anonymous=True)
 
-    cam_send = picam()
-    imu_send = Imu_send()
+    camSend = picam()
+    imuSend = Imu_send()
 
-    cam_send_thread = Thread(target=cam_send.ImagePublisher)
-    imu_send_thread = Thread(target=Imu_send.imu_send)
+    cam_send_thread = Thread(target=camSend.ImagePublisher)
+    imu_send_thread = Thread(target=imuSend.imu_send)
 
     cam_send_thread.daemon = True
     imu_send_thread.daemon = True
