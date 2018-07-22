@@ -148,7 +148,7 @@ if __name__ == '__main__':
     while not rospy.is_shutdown():
         try:
             print "Publisher running..."
-        except rospy.ROSInterruptException:
+        except KeyboardInterrupt:
             print "Shutting down ROS Image module"
             camSend.stop()
             imuSend.stop()
