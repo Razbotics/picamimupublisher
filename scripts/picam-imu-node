@@ -146,25 +146,15 @@ if __name__ == '__main__':
     cam_send_thread.start()
     imu_send_thread.start()
 
-    # try:
-    while camSend.running:
-        try:
+    try:
+        while camSend.running:
             print "Publisher running..."
-        except KeyboardInterrupt:
-            print "Shutting down ROS Image module"
-            camSend.running = False
-            imuSend.running = False
-            break
 
-    # except KeyboardInterrupt:
-    #     print "Shutting down ROS Image module"
-    #     camSend.stop()
-    #     imuSend.stop()
-    #
-    # except Exception:
-    #     print "Shutting down ROS Image module"
-    #     camSend.stop()
-    #     imuSend.stop()
+    except KeyboardInterrupt:
+        print "Shutting down ROS Image module"
+        camSend.running = False
+        imuSend.running = False
+
 
     camSend.stop()
     imuSend.stop()
