@@ -148,18 +148,18 @@ if __name__ == '__main__':
                 print "Publisher running..."
             except rospy.ROSInterruptException:
                 print "Shutting down ROS Image module"
-                cam_send.stop()
-                imu_send.stop()
+                camSend.stop()
+                imuSend.stop()
 
     except KeyboardInterrupt:
         print "Shutting down ROS Image module"
-        cam_send.stop()
-        imu_send.stop()
+        camSend.stop()
+        imuSend.stop()
 
     except Exception:
         print "Shutting down ROS Image module"
-        cam_send.stop()
-        imu_send.stop()
+        camSend.stop()
+        imuSend.stop()
 
     cam_send_thread.join()
     imu_send_thread.join()
