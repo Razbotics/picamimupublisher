@@ -136,30 +136,32 @@ if __name__ == '__main__':
     rospy.init_node('pidrone_publisher', anonymous=True)
     camSend = picam()
     imuSend = Imu_send()
+
     cam_send_thread = Thread(target=camSend.ImagePublisher)
     imu_send_thread = Thread(target=imuSend.imu_send)
     cam_send_thread.daemon = True
+    imu_send_thread.daemon = True
     cam_send_thread.start()
     imu_send_thread.start()
 
-    try:
-        while not rospy.is_shutdown() and cam_send_thread.running and imu_send_thread.running:
-            try:
-                print "Publisher running..."
-            except rospy.ROSInterruptException:
-                print "Shutting down ROS Image module"
-                camSend.stop()
-                imuSend.stop()
+    # try:
+    while not rospy.is_shutdown() and camSend.running and imuSend.running:
+        try:
+            print "Publisher running..."
+        except rospy.ROSInterruptException:
+            print "Shutting down ROS Image module"
+            camSend.stop()
+            imuSend.stop()
 
-    except KeyboardInterrupt:
-        print "Shutting down ROS Image module"
-        camSend.stop()
-        imuSend.stop()
-
-    except Exception:
-        print "Shutting down ROS Image module"
-        camSend.stop()
-        imuSend.stop()
+    # except KeyboardInterrupt:
+    #     print "Shutting down ROS Image module"
+    #     camSend.stop()
+    #     imuSend.stop()
+    #
+    # except Exception:
+    #     print "Shutting down ROS Image module"
+    #     camSend.stop()
+    #     imuSend.stop()
 
     cam_send_thread.join()
     imu_send_thread.join()
