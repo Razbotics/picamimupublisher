@@ -51,12 +51,13 @@ class picam(Thread):
                 self.image_pub.publish(image)
                 if count > 250:
                     count = 1
-                print "image count: ", count+1
+                #print "image count: ", count = count+1
                 while self.elapsed < self.update_rate:
                     self.elapsed = time.time() - current
 
         except:
               print "Image Capture Failed..."
+              break
 
 class Imu_send(Thread):
     def __init__(self, rate = 250):
@@ -102,11 +103,12 @@ class Imu_send(Thread):
                 imu_pub.publish(imu)
                 if count > 2500:
                     count = 1
-                print "imu count: ", count+1
+                print "imu count: ", count=count+1
                 while elapsed < self.update_rate:
                    elapsed = time.time() - start_time
         except:
             print "Imu read failed..."
+            break
 
 
 
@@ -126,10 +128,10 @@ if __name__ == '__main__':
     cam_send_thread.start()
     imu_send_thread.start()
 
-    cam_send_thread.join()
-    imu_send_thread.join()
-
     try:
         rospy.spin()
     except KeyboardInterrupt:
         print "Shutting down ROS Image module"
+
+    cam_send_thread.join()
+    imu_send_thread.join()
