@@ -110,7 +110,7 @@ class Imu_send(Thread):
                 imu.angular_velocity.y = gyro_data['y']
                 imu.angular_velocity.z = gyro_data['z']
 
-                imu_pub.publish(imu)
+                self.imu_pub.publish(imu)
                 count=count+1
                 if count > 2500:
                     count = 1
