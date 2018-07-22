@@ -11,7 +11,7 @@ from threading import Thread
 ## PiCamera Class
 class picam(Thread):
     def __init__(self, width = 640, height = 480, quality = 8, rate = 25):
-        self.image_pub = rospy.Publisher('/pidrone/image_raw/compressed', CompressedImage, queue_size=10)
+        self.image_pub = rospy.Publisher('/pidrone/image_raw/compressed', CompressedImage,tcp_nodelay=True, queue_size=1)
         self.pixels = (width, height)
         self.quality = quality
         self.stream = io.BytesIO()
@@ -72,7 +72,7 @@ class picam(Thread):
 
 class Imu_send(Thread):
     def __init__(self, rate = 250):
-        self.imu_pub = rospy.Publisher('/pidrone/imu', Imu, queue_size=10)
+        self.imu_pub = rospy.Publisher('/pidrone/imu', Imu, queue_size=1)
         self.sensor = MPU6050(0x68)
         self.update_rate = 1.0/rate
         self.running = True
@@ -145,7 +145,7 @@ if __name__ == '__main__':
     imu_send_thread.start()
 
     # try:
-    while not rospy.is_shutdown():
+    while camSend.running:
         try:
             print "Publisher running..."
         except KeyboardInterrupt:
@@ -164,7 +164,7 @@ if __name__ == '__main__':
     #     camSend.stop()
     #     imuSend.stop()
 
-    cam_send_thread.join()
-    imu_send_thread.join()
     camSend.stop()
     imuSend.stop()
+    cam_send_thread.join()
+    imu_send_thread.join()
