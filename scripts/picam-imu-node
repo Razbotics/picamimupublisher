@@ -17,7 +17,7 @@ class picam(Thread):
         self.quality = quality
         self.stream = io.BytesIO()
         self.elapsed = 0
-        self.update_rate = 1.0/rate
+        self.rate_cam = rospy.Rate(rate)
         self.running = True
         try:
             self.camera = picamera.PiCamera()
@@ -39,14 +39,12 @@ class picam(Thread):
     def run(self):
         try:
             image = CompressedImage()
-            # count = 1
             # Use the video-port for captures...
             for foo in self.camera.capture_continuous(self.stream, 'jpeg',
                         quality=self.quality, use_video_port=True):
                 if not self.running:
                     break
                 #publish images here
-                current = time.time()
                 image.header.stamp = rospy.Time.now()
                 image.header.frame_id = "camera_link"
                 image.format = "jpeg"
@@ -54,12 +52,7 @@ class picam(Thread):
                 self.stream.seek(0)
                 self.stream.truncate()
                 self.image_pub.publish(image)
-                # count = count+1
-                # if count > 250:
-                #     count = 1
-                # print "image count: ", count
-                while self.elapsed < self.update_rate:
-                    self.elapsed = time.time() - current
+                self.rate_cam.sleep()
         except KeyboardInterrupt:
             print "KeyboardInterrupt"
             self.running = False
@@ -74,7 +67,7 @@ class Imu_send(Thread):
     def __init__(self, rate = 250):
         self.imu_pub = rospy.Publisher('/pidrone/imu', Imu, queue_size=1)
         self.sensor = MPU6050(0x68)
-        self.update_rate = 1.0/rate
+        self.rate_imu = rospy.Rate(rate)
         self.orientation_covariance = [-1.0, 0.0, 0.0,
                                         0.0, 0.0, 0.0,
                                         0.0, 0.0, 0.0]
@@ -84,11 +77,11 @@ class Imu_send(Thread):
         self.linear_acceleration_covariance = [0.0, 0.0, 0.0,
                                                0.0, 0.0, 0.0,
                                                0.0, 0.0, 0.0]
+        print "Imu initialised"
+
     def imu_send(self):
         try:
             imu = Imu()
-            # count = 1
-            elapsed = 0
             accel_data = self.sensor.get_accel_data()
             gyro_data = self.sensor.get_gyro_data()
 
@@ -109,10 +102,7 @@ class Imu_send(Thread):
             imu.angular_velocity.z = gyro_data['z']
 
             self.imu_pub.publish(imu)
-            # count=count+1
-            # if count > 2500:
-            #     count = 1
-            # print "imu count: ", count
+            self.rate_imu.sleep()
 
         except KeyboardInterrupt:
             print "KeyboardInterrupt"
@@ -122,9 +112,7 @@ class Imu_send(Thread):
 
 
 if __name__ == '__main__':
-    #while True:
     rospy.init_node('pidrone_publisher', anonymous=True)
-    rate_imu = rospy.Rate(100)
     camSend = picam()
     imuSend = Imu_send()
     print "Started ROS node"
@@ -135,7 +123,6 @@ if __name__ == '__main__':
         if camSend.running:
             try:
                 imuSend.imu_send()
-                rate_imu.sleep()
             except rospy.ROSInterruptException:
                 camSend.running = False
                 break
