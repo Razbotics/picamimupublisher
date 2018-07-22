@@ -1,0 +1,135 @@
+#! /usr/bin/env python
+import rospy
+from sensor_msgs.msg import Imu, CompressedImage
+import io
+import time
+import numpy as np
+import picamera
+from picamimupublisher.MPU6050 import MPU6050
+from threading import Thread
+
+## PiCamera Class
+class picam(Thread):
+    def __init__(self, width = 640, height = 480, quality = 8, rate = 25):
+        self.image_pub = rospy.Publisher('/pidrone/image_raw/compressed', CompressedImage, queue_size=10)
+        self.pixels = (width, height)
+        self.quality = quality
+        self.stream = io.BytesIO()
+        self.elapsed = 0
+        self.update_rate = 1.0/rate
+        try:
+            self.camera = picamera.PiCamera()
+            self.camera.resolution = self.pixels
+            self.camera.framerate = rate
+            #camera.iso = 100
+            self.camera.vflip = True
+            self.camera.hflip = True
+            self.camera.shutter_speed = self.camera.exposure_speed
+            #self.camera.color_effects = (128,128)
+            self.camera.exposure_mode = 'fixedfps'
+            #g = camera.awb_gains
+            #camera.awb_mode = 'off'
+            #camera.awb_gains = g
+            print "camera initialised"
+        except:
+            print "can't initialise camera"
+
+    def ImagePublisher(self):
+        try:
+            image = CompressedImage()
+            count = 1
+            # Use the video-port for captures...
+            for foo in self.camera.capture_continuous(self.stream, 'jpeg', quality=self.quality, use_video_port=True):
+                #publish images here
+                current = time.time()
+                image.header.stamp = rospy.Time.now()
+                image.header.frame_id = "camera_link"
+                image.format = "jpeg"
+                image.data = np.frombuffer(self.stream.getvalue(), dtype=np.dtype('uint8'))
+                self.stream.seek(0)
+                self.stream.truncate()
+                self.image_pub.publish(image)
+                if count > 250:
+                    count = 1
+                print "image count: ", count+1
+                while self.elapsed < self.update_rate:
+                    self.elapsed = time.time() - current
+
+        except:
+              print "Image Capture Failed..."
+
+class Imu(Thread):
+    def __init__(self, rate = 250):
+        self.imu_pub = rospy.Publisher('/pidrone/imu', Imu, queue_size=10)
+        self.sensor = MPU6050(0x68)
+        self.update_rate = 1.0/rate
+        self.orientation_covariance = [-1.0, 0.0, 0.0,
+                                        0.0, 0.0, 0.0,
+                                        0.0, 0.0, 0.0]
+        self.angular_velocity_covariance = [-1.0, 0.0, 0.0,
+                                             0.0, 0.0, 0.0,
+                                             0.0, 0.0, 0.0]
+        self.linear_acceleration_covariance = [0.0, 0.0, 0.0,
+                                               0.0, 0.0, 0.0,
+                                               0.0, 0.0, 0.0]
+
+    def Imu_send(self):
+        try:
+            imu = Imu()
+            count = 1
+            while True:
+                start_time = time.time()
+                elapsed = 0
+                accel_data = self.sensor.get_accel_data()
+                gyro_data = self.sensor.get_gyro_data()
+
+                #publish imu here
+                imu.header.stamp = rospy.Time.now()
+                imu.header.frame_id = "imu_link"
+
+                imu.orientation_covariance = self.orientation_covariance
+                imu.angular_velocity_covariance = self.angular_velocity_covariance
+                imu.linear_acceleration_covariance = self.linear_acceleration_covariance
+
+                imu.linear_acceleration.x = accel_data['x']
+                imu.linear_acceleration.y = accel_data['y']
+                imu.linear_acceleration.z = accel_data['z']
+
+                imu.angular_velocity.x = gyro_data['x']
+                imu.angular_velocity.y = gyro_data['y']
+                imu.angular_velocity.z = gyro_data['z']
+
+                imu_pub.publish(imu)
+                if count > 2500:
+                    count = 1
+                print "imu count: ", count+1
+                while elapsed < self.update_rate:
+                   elapsed = time.time() - start_time
+        except:
+            print "Imu read failed..."
+
+
+
+if __name__ == '__main__':
+    #while True:
+    rospy.init_node('pidrone_publisher', anonymous=True)
+
+    cam_send = picam()
+    imu_send = Imu()
+
+    cam_send_thread = Thread(target=cam_send.capture)
+    imu_send_thread = Thread(target=imu_send.Imu_send)
+
+    cam_send_thread.daemon = True
+    imu_send_thread.daemon = True
+
+    cam_send_thread.start()
+    imu_send_thread.start()
+
+    cam_send_thread.join()
+    imu_send_thread.join()
+
+    try:
+        rospy.spin()
+    except KeyboardInterrupt:
+        print "Shutting down ROS Image module"
