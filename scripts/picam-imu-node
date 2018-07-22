@@ -62,9 +62,13 @@ class picam(Thread):
                 print "image count: ", count
                 while self.elapsed < self.update_rate:
                     self.elapsed = time.time() - current
+        except KeyboardInterrupt:
+            print "KeyboardInterrupt"
+            self.stop()
 
-        except:
+        except Exception:
               print "Image Capture Failed..."
+              self.stop()
 
 class Imu_send(Thread):
     def __init__(self, rate = 250):
@@ -85,7 +89,7 @@ class Imu_send(Thread):
         self.running = False
 
     def imu_send(self):
-        # try:
+        try:
             imu = Imu()
             count = 1
             while self.running:
@@ -117,8 +121,14 @@ class Imu_send(Thread):
                 print "imu count: ", count
                 while elapsed < self.update_rate:
                    elapsed = time.time() - start_time
-        # except:
-        #     print "Imu read failed..."
+
+        except KeyboardInterrupt:
+            print "KeyboardInterrupt"
+            self.stop()
+
+        except Exception:
+            print "Imu read failed..."
+            self.stop()
 
 
 if __name__ == '__main__':
@@ -132,7 +142,7 @@ if __name__ == '__main__':
     imu_send_thread = Thread(target=imuSend.imu_send)
 
     cam_send_thread.daemon = True
-    imu_send_thread.daemon = True
+    # imu_send_thread.daemon = True
 
     cam_send_thread.start()
     imu_send_thread.start()
