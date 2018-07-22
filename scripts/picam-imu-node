@@ -39,9 +39,9 @@ class picam(Thread):
         self.running = False
 
     def ImagePublisher(self):
-        # try:
+        try:
             image = CompressedImage()
-            count = 1
+            # count = 1
             # Use the video-port for captures...
             for foo in self.camera.capture_continuous(self.stream, 'jpeg',
                         quality=self.quality, use_video_port=True):
@@ -56,19 +56,19 @@ class picam(Thread):
                 self.stream.seek(0)
                 self.stream.truncate()
                 self.image_pub.publish(image)
-                count = count+1
-                if count > 250:
-                    count = 1
-                print "image count: ", count
+                # count = count+1
+                # if count > 250:
+                #     count = 1
+                # print "image count: ", count
                 while self.elapsed < self.update_rate:
                     self.elapsed = time.time() - current
-        # except KeyboardInterrupt:
-        #     print "KeyboardInterrupt"
-        #     self.running = False
-        #
-        # except Exception:
-        #       print "Image Capture Failed..."
-        #       self.running = False
+        except KeyboardInterrupt:
+            print "KeyboardInterrupt"
+            self.running = False
+
+        except Exception:
+              print "Image Capture Failed..."
+              self.running = False
 
 class Imu_send(Thread):
     def __init__(self, rate = 250):
@@ -91,7 +91,7 @@ class Imu_send(Thread):
     def imu_send(self):
         try:
             imu = Imu()
-            count = 1
+            # count = 1
             while self.running:
                 start_time = time.time()
                 elapsed = 0
@@ -115,10 +115,10 @@ class Imu_send(Thread):
                 imu.angular_velocity.z = gyro_data['z']
 
                 self.imu_pub.publish(imu)
-                count=count+1
-                if count > 2500:
-                    count = 1
-                print "imu count: ", count
+                # count=count+1
+                # if count > 2500:
+                #     count = 1
+                # print "imu count: ", count
                 while elapsed < self.update_rate:
                    elapsed = time.time() - start_time
 
@@ -133,23 +133,24 @@ class Imu_send(Thread):
 
 if __name__ == '__main__':
     #while True:
+    rospy.init_node('pidrone_publisher', anonymous=True)
+    camSend = picam()
+    imuSend = Imu_send()
+    cam_send_thread = Thread(target=camSend.ImagePublisher)
+    imu_send_thread = Thread(target=imuSend.imu_send)
+    cam_send_thread.daemon = True
+    cam_send_thread.start()
+    imu_send_thread.start()
+
     try:
-        rospy.init_node('pidrone_publisher', anonymous=True)
+        while not rospy.is_shutdown() abd cam_send_thread.running and imu_send_thread.running:
+            try:
+                print "Publisher running..."
+            except rospy.ROSInterruptException:
+                print "Shutting down ROS Image module"
+                cam_send_thread.stop()
+                imu_send_thread.stop()
 
-        camSend = picam()
-        imuSend = Imu_send()
-
-        cam_send_thread = Thread(target=camSend.ImagePublisher)
-        imu_send_thread = Thread(target=imuSend.imu_send)
-
-        cam_send_thread.daemon = True
-        imu_send_thread.daemon = True
-
-        cam_send_thread.start()
-        imu_send_thread.start()
-    #
-    # try:
-    #     rospy.spin()
     except KeyboardInterrupt:
         print "Shutting down ROS Image module"
         cam_send_thread.stop()
