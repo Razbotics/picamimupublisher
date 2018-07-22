@@ -45,7 +45,7 @@ class picam(Thread):
             # Use the video-port for captures...
             for foo in self.camera.capture_continuous(self.stream, 'jpeg',
                         quality=self.quality, use_video_port=True):
-                if not self.running:
+                if not rospy.is_shutdown() or not self.running:
                     break
                 #publish images here
                 current = time.time()
@@ -92,7 +92,7 @@ class Imu_send(Thread):
         try:
             imu = Imu()
             # count = 1
-            while self.running:
+            while not rospy.is_shutdown() or self.running:
                 start_time = time.time()
                 elapsed = 0
                 accel_data = self.sensor.get_accel_data()
