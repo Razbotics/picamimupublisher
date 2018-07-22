@@ -40,7 +40,8 @@ class picam(Thread):
         try:
             image = CompressedImage()
             # Use the video-port for captures...
-            for foo in self.camera.capture_continuous(self.stream, 'rgb', use_video_port=True):
+            for foo in self.camera.capture_continuous(self.stream, 'jpeg',
+                        quality=self.quality, use_video_port=True):
                 if not self.running:
                     break
                 #publish images here
@@ -112,8 +113,8 @@ class Imu_send(Thread):
 
 if __name__ == '__main__':
     rospy.init_node('pidrone_publisher', anonymous=True)
-    camSend = picam(rate = 25)
-    imuSend = Imu_send(rate = 150)
+    camSend = picam(rate = 30)
+    imuSend = Imu_send(rate = 120)
     print "Started ROS node"
     camSend.daemon = True
     camSend.start()
