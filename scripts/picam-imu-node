@@ -119,8 +119,6 @@ class Imu_send(Thread):
                    elapsed = time.time() - start_time
         except:
             print "Imu read failed..."
-            break
-
 
 
 if __name__ == '__main__':
