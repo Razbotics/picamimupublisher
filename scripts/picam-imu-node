@@ -117,7 +117,7 @@ if __name__ == '__main__':
     cam_send = picam()
     imu_send = Imu_send()
 
-    cam_send_thread = Thread(target=cam_send.capture)
+    cam_send_thread = Thread(target=cam_send.ImagePublisher)
     imu_send_thread = Thread(target=Imu_send.imu_send)
 
     cam_send_thread.daemon = True
