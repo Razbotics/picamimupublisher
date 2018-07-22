@@ -113,8 +113,8 @@ class Imu_send(Thread):
 
 if __name__ == '__main__':
     rospy.init_node('pidrone_publisher', anonymous=True)
-    camSend = picam()
-    imuSend = Imu_send()
+    camSend = picam(rate = 20)
+    imuSend = Imu_send(rate = 100)
     print "Started ROS node"
     camSend.daemon = True
     camSend.start()
