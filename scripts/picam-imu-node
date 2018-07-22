@@ -143,7 +143,7 @@ if __name__ == '__main__':
     imu_send_thread.start()
 
     try:
-        while not rospy.is_shutdown() abd cam_send_thread.running and imu_send_thread.running:
+        while not rospy.is_shutdown() and cam_send_thread.running and imu_send_thread.running:
             try:
                 print "Publisher running..."
             except rospy.ROSInterruptException:
